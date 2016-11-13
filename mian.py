@@ -16,7 +16,7 @@ def main():
     text2 = nltk.FreqDist(list)
 
 
-    for i in text2.most_common(100):
+    for i in text2.most_common(1000):
         print(i)
 
 
