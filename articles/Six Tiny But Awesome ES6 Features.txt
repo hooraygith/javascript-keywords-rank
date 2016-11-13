@@ -1,0 +1,39 @@
+Everyone in the JavaScript community loves new APIs, syntax updates, and features -- they provide better, smarter, more efficient ways to accomplish important tasks.  ES6 brings forth a massive wave of new goodies and the browser vendors have worked hard over the past year to get those language updates into their browser.  While there are big updates, some of the smaller language updates have put a massive smile on my face; the following are six of my favorite new additions within the JavaScript language!
+
+1.  Object [key] setting syntax
+One annoyance JavaScript developers have had for ages is not being able to set a variable key's value within an object literal declaration -- you had to add the key/value after original declaration:
+
+At best this pattern is inconvenient and at worst it's confusing and ugly.  ES6 provides developers a way out of this mess:
+
+Wrapping the variable key in [] allows developers to get everything done within one statement!
+
+2.  Arrow Functions
+You don't need to have kept up with every ES6 change to know about arrow functions -- they've been the source of much talk and some confusion (at least initially) to JavaScript developers.  While I could write multiple blog posts to explain each facet of the arrow function, I want to point out how arrow functions provide a method for condensed code for simple functions:
+
+No function or return keywords, sometimes not even needing to add () -- arrow functions are a great coding shortcut for simple functions.
+
+3.  find/findIndex
+JavaScript gives developers Array.prototype.indexOf to get the index of a given item within an array, but indexOf doesn't provide a method to calculate the desired item condition; you also need to search for an exact known value.  Enter find and findIndex -- two methods for searching an array for the first match of a calculated value:
+
+find and findIndex, through allowing a calculated value search, also prevent unnecessary side effects and looping through possible values!
+
+4.  The Spread Operator: ...
+The spread operator signals that an array or iterable object should have its contents split into separate arguments within a call.  A few examples:
+
+The awesome added bonus is being able to convert iterable objects (NodeList, arguments, etc.) to true arrays -- something we've used Array.from or other hacks to do for a long time.
+
+5.  Template Literals
+Multiline strings within JavaScript were originally created by either concatenation or ending the line with a \ character, both of which can be difficult to maintain.   Many developers and even some frameworks started abusing <script> tags to encapsulate multiline templates, others actually created the elements with the DOM and used outerHTML to get the element HTML as a string.
+
+ES6 provides us template literals, whereby you can easily create multiline strings using backticks characters:
+
+Of course template literals allow you to create more than multiline strings, like simple to advanced interpolation, but just the ability to create multiline strings elegantly puts a smile on my face.
+
+6.  Default Argument Values
+Providing default argument values in function signatures is an ability provided by many server-side languages like python and PHP, and now we have that ability within JavaScript:
+
+Other languages may throw a warning if arguments without a default value aren't provided but JavaScript will continue to set those argument values to undefined.
+
+The six features I've listed here are just a drop in the bucket of what ES6 provides developers but they're features we'll use frequently without thinking anything of it.  It's these tiny additions that oftentimes don't get attention but become core to our coding.
+
+Did I leave anything out?  Let me know what small additions to JavaScript you love!

@@ -1,0 +1,215 @@
+Ember is fantastic for all kinds of frontend projects, but its sweet spot are medium/large real-world applications.
+
+Its philosophy is reflected in phrases such as “Built for productivity”, “Don’t reinvent the wheel” and “Don’t waste time making trivial choices”.
+
+
+
+In order to learn Ember we need to start small. That is exactly what we’ll do today.
+
+We will build a reading list – not the most complex app ever built, but more than enough to learn its architecture and best practices.
+
+Ember CLI in a nutshell
+
+Ember CLI is a command-line interface tool for creating and maintaining Ember apps. It’s essential for a productive development experience and, as such, the starting point of any new app. It shares common idioms and Ember’s philosophy of not reinventing the wheel.
+
+Based on Broccoli (an asset pipeline) it brings a lot to the table:
+
+ES6 syntax via Babel
+dependency management via npm and Bower
+file generators from blueprints
+static server with backend proxying and live browser reloading
+testing tools
+a vibrant add-on ecosystem
+Most importantly, it enforces a strong conventional project structure.
+
+Getting up and running
+
+In order to install Ember CLI we need node and npm.
+
+Done?
+
+Let’s make sure the ember command is ready to use:
+
+All set!
+
+Need to update Ember CLI or an Ember project? Here’s how. (I bookmarked the page!)
+Reading list app
+
+Our goals are:
+
+build a reading-list component that lists, adds and removes books
+use that component as a widget at root URL (/), supplying it data and actions
+
+Create the app!
+
+Ember is URL-driven. It is fundamentally important in Ember and it impacts all architectural decisions.
+Starting from the / URL, we will create a route for this URL and its corresponding template:
+
+“Okay Frank, good to know about the URL, but I have no idea what a route is! And its corresponding template?!!”
+
+If you’re thinking that, you are absolutely right! Let’s go step by step explaining what the ember generate route application just did for us:
+
+1) It added a routing definition in the router (app/router.js)
+
+BS, Frank! I opened the file and see no this.route('application')! What’s the deal?!
+
+You’re right! One of Ember conventions (sometimes referred to as Ember magic) is having the application route mapped by default to the / root URL. This is exactly why I chose application.
+
+So while this time we don’t see a route definition, any other route will. Had we requested ember generate route strawberries we would have found a this.route('strawberries') definition.
+
+The default URL path for application is /. The default URL path for strawberries is /strawberries. Ember lets us override a default path like so:
+
+Paths may also contain parameters, like /strawberries/:id – but we will get to that later.
+In essence, the router maps URLs to their respective route handlers.
+
+
+2) ember generate created the route at app/routes/application.js
+
+Based on information from the URL, the route will load and return a model (a model entity, an object) in a handler method named model(), like so:
+
+model() is sometimes referred to as “the model() hook” because it’s a specific method invoked by the Ember framework every time it needs to handle a web request.
+In other words, the route can be understood as a deserialization process from String to Object.
+
+As the route has loaded a model, we will consider it the model data owner. Following best practices, it means that all data mutation and manipulation related to this model should be initiated by the owner.
+
+3) ember generate created the associated template at app/templates/application.hbs
+
+Templates are used to display model data in HTML using the Handlebars templating language. They receive the model loaded in the route as a parameter, model. We will shortly see how this works.
+
+4) ember generate created a unit test file
+
+We will discuss unit & integration testing in a later episode.
+
+Let’s get our keyboard dirty!
+
+Step 1: Listing books
+
+We boot up Ember:
+
+Visiting localhost:4200 will show an empty page (after all, our template is empty!)
+
+Remember our goal?
+
+
+We’ve got work to do!
+
+Fire up your code editor and open the reading-list directory.
+
+Return an actual model in the route
+
+Let’s return data for our template to use.
+
+Our route’s model() hook returns a brand-new array with 3 default books from a pseudo-database located in ../utils/db:
+
+For the sake of this example we use a small, ad-hoc, embedded “database” backed by a plain Javascript Array.
+
+You will never do something like this in your Ember projects. It is however conducive to better explain Ember concepts. Paste the following in your project (or grab the file from here):
+
+Models can be represented by any data structure. Real-world applications typically access data on a remote database behind an API.
+
+Ember Data exists for this very reason. Tell-tale signs of its usage are:
+
+Routes returning this.store.findAll() or this.store.findRecord()
+Model classes extending DS.Model placed in the app/models directory
+To keep things simple, this guide won’t cover Ember Data. We’ll leave it for the next instalment!
+Show me the data!
+
+The template receives the model parameter from the route. As we want to use a widget, we will pass the model into the component.
+
+We will later see what {{outlet}} means. (Hint: it has to do with nested routes.)
+Excellent. Before we try this out, we have to create the reading-list widget – our first Ember component!
+
+(Ctrl+C will stop ember server if it was running.)
+
+What did Ember CLI generate this time around?
+
+The component’s Javascript
+The component’s template
+An integration test for the component
+Let’s quickly edit the component’s template:
+
+It received an array of books, so we used the each helper to iterate over it!
+
+Helpers are (typically) pure functions that work in Handlebars templates. Ember ships with a bunch of them, Ember add-ons may also provide some, and you can of course create your own! We won’t go into much detail but you will notice we use them fairly often. They are super helpful.
+Run ember server (or ember s for short) again if you must.
+
+
+Success!
+
+Here is an overview of our application’s data flow:
+
+
+Notice the uni-directional data flow. Data flows down (solid lines) and actions are sent up (dashed lines). Green lines are database calls. This approach is dubbed “Data Down, Actions Up” or DDAU for short.
+
+One-way data bindings are the most idiomatic way of developing Ember applications. In the spirit of React, this explicit data flow makes applications much easier to reason about and debug.
+
+Also, if you’d like to dive deeper and grok these concepts (routes, components, models, etc) before putting them into practice, read 5 Essential Ember Concepts You Must Understand.
+Ember articles like this delivered straight to your inbox? Tell me where:
+
+First name (or nickname!)
+
+Email address
+  Keep me updated!
+(A few e-mails per month. No BS. Unsubscribe anytime!)
+
+Step 2: Adding books
+
+In the above graph, we notice the flow of data going up with actions.
+
+This section will require the help of two add-ons contributed by the community. (Yet another reason why Ember CLI is awesome.)
+
+In the reading-list directory run:
+
+Congratulations, we installed our two first add-ons!
+
+ember-one-way-controls allows us to use one-way data bindings in our form inputs
+ember-route-action-helper lets us access actions in our route. Why do we need it? Remember that data changes should be performed by its owner? In our case the owner is the route
+To be able to input a title, we have include a form input just before the books list:
+
+Okay, what’s going on?
+
+value: it is the property the input reads is value from
+update: the input sends updates to an action; in this case we are using the (mut value) helper “subexpression” which creates a mutator for that property. It really is a shorthand, it is the equivalent of calling (action 'updateValue') along with an action defined as:
+keyEvents: takes a hash (a key/value object) that maps keyCodes with actions. Very handy! We mapped 13 (enter key) to the onEnter action!
+The Javascript portion of any component backs its template with data and actions. Any property or action that appears in the template is also available in Javascript and viceversa.
+
+Regular templates (that is, not component templates) have backing Javascript files called Controllers.
+The reading-list.js file therefore has to include the value property and the onEnter action:
+
+Interesting! What is the onEnter action doing?
+
+It’s calling a closure action – an action that was passed into the component like this:
+
+“But Frank… why are we doing this? Why don’t we just add the book to the books property available to the component?”
+
+Because we want to the route (data owner) to perform the update. The route-action helper that we previously installed enables us to do exactly that.
+
+Remember the graph?
+
+
+Here is the addBook action definition, in the route:
+
+The addBook action simply does the appropriate database call and triggers this.refresh() because we want to stay in this same route.
+
+Real-world apps normally use this.transitionTo(routeName, params) as they often need to navigate to another route and/or pass query parameters.
+
+So, this.refresh() will trigger the route to reload, calling model() again. As the data flow graph reveals, the component re-renders once its books binding is updated.
+
+This is the result:
+
+
+Step 3: Removing books
+
+Remove can be similarly implemented:
+
+Create the removeBook application route action:
+Pass removeBook into the component
+Place a button that triggers removeBook next to the title in the component template
+It works!
+
+
+If you’re interested, the code is up on Github as frank06/ember-reading-list. I also recommend giving the offical Ember guides a good read.
+
+I hope this helped! Did you enjoy the process? Any questions? Let me know everything in the comments below.
+
+In the next instalment we will show how to work with routes (and why the URL is so important), move to Ember Data, Services and more.

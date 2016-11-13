@@ -1,0 +1,33 @@
+Whether you’re suffering from Javascript fatigue, ES anxiety, post-webpack stress disorder or any other kind of web development malady, the last thing you probably want to do now is look at another Javascript framework.
+But the focus, simplicity and flexibility of Vue.js might just make it the hero you need. Coming a bit later to the game in 2014, Vue has had the advantage of being able to pick and choose from the best parts of its predecessors.
+Focus
+Vue has a narrow use case: building user interfaces for the web. The creators know that there are already plenty of libraries out there to help you iterate arrays or handle promises and HTTP requests, so you won’t find any of that duplicated in Vue.
+This focus allows Vue to avoid the bloat of other frameworks. But just as importantly, the minimal surface areas of its API allows its creators to focus more on improving Vue than maintaining it.
+That said, Vue does have supporting libraries like vue-router, for routing, and vuex, a Flux-inspired library for state management. These integrate deeply with Vue but are completely optional.
+Here’s a great example of Vue’s focus ethos in action: Vue creator Evan You announced last week that vue-resources, the official AJAX library for Vue, would be retired from the Vue organisation. The reason: AJAX is not a problem domain requiring deep integration with Vue and the time spent bug fixing it would be better spent on more integral parts of the stack.
+Simplicity
+Adding Vue to your web project can be as simple as:
+And you’re ready to start. No polyfilling, no transpiling, no wrestling with a bundler.
+Vue code has simplicity built into its design. Look at this “hello world” example:
+Even those with only a basic understanding of HTML and JS — perhaps designers and juniors on a team — can get a sense of how Vue code works. For more experienced developers, this simplicity allows immediate productivity.
+If the success of jQuery is anything to go by, Vue’s standing as the simplest of the frameworks could take it a long way.
+I .. really care about the approachability part of Vue, which is rooted in the belief that technology should be enabling more people to build things
+Evan You, creator of Vue.js — Between The Wires
+Flexibility
+If you want to write a quick and easy app that will run straight from the browser, Vue has got you covered. If you want to build a more sophisticated app with ES6, JSX, separate component files, routing, bundling etc, then Vue can deal with that too.
+Vue is focused regarding what it can do for you, but not opinionated about how you do it. For example, if you have a preferred method for writing your templates, Vue lets you do it in any of these ways:
+Write your template in an HTML file
+Write your template in a string in a Javascript file
+Use JSX in a Javascript file
+Make your template in pure Javascript using virtual nodes
+This flexibility makes it easy to switch to Vue because React developers, Angular developers, or developers new to JS frameworks would all find Vue’s design familiar.
+Copying competitors
+A lot of what Vue is getting right is what its predecessors already got right. Just ask an Angular developer. Vue’s directives copy Angular’s right down to the syntax: to bind an input to application data in Vue you use v-model just like Angular’s ng-model.
+As a relatively late mover, Vue has been able to copy what works in other frameworks and avoid what doesn’t. Vue’s state management library Vuex has obvious inspiration from Elm. Vue’s components are very similar to Polymer’s customer elements. In its latest version, Vue is now rocking a virtual DOM à la React.
+Vue is earning its place by being a great solution if not an original one.
+Where Vue Is Lacking
+Before you dive into Vue consider these potential drawbacks:
+Vue doesn’t yet have the support and wide spread adoption of it’s fellow frameworks. There are far more resources for React, from NPM modules to Stack Overflow answers.
+While Vue is being picked up by large organisations like Alibaba and Baidu, some more examples of high traffic websites would attest to Vue’s integrity at scale.
+Maybe there’s such a thing as being too flexible. An Ember app will always look like an Ember app. But Vue’s multitude of options might become a burden when used in larger projects involving many developers.
+Interested in joining a discussion about Vue.js? Join our Vue.js Developers Facebook group.

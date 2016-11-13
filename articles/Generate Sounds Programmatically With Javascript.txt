@@ -1,0 +1,68 @@
+During a recent hackathon, I decided to build a multiplayer 8 bits sequencer using sounds generated programatically with the Web Audio API. I didn’t want to only use the HTML 5 audio tag because I found it too limiting… but the first thing I discovered is that getting the right kind of sound is not straightforward at all, especially if you only have a very basic musical background like myself. So how exactly do you create a clear, ringing and nice sounding note?
+
+In this article I’ll give some pointers with usable code. I’ve also added examples that you can actually run if your browser supports it.
+
+Produce a Simple Beep
+
+First let’s create a very basic beep using a sinusoid. We’ll initiate an audio context, which is the central object for generating sound. Then we’ll create an oscillator producing the sine wave. Finally we connect the oscillator to the context and start.
+
+Play Stop
+
+You’ll notice that the sound produced here is not great. It seems like you let a phone off the hook and when you stop it, you hear a “click” and it’s not pleasant at all. This is because the human hear reacts this way as explained in this great article. Basically when you stop the sound anywhere else than the zero crossing point, you’ll hear this clicking sound.
+
+Clicking noise on a sine curve
+Getting Rid Of The Clicking Sound
+
+The best solution to get rid of this click is to ramp the sine wave down with an exponentional function, using AudioParam.exponentialRampToValueAtTime() as documented here.
+
+This time we need to add a gain node to our oscillator. A gain node allows us to change the volume of a signal as explained in this schema from the documentation:
+
+Gain node
+The code to start the sound now looks like this:
+
+Play
+
+In order to stop the sound we change the gain value, effectively reducing the volume. Note that we don’t ramp down to 0 since there is a limitation in this function where the value has to be positive.
+
+Stop
+
+As you can hear, the clicking sound is gone! But that’s not the only interesting thing that you can do with this exponential ramp down.
+
+Set A Ringing Effect
+
+In the example above, we decided to stop the sound really quickly, in 0.04 seconds. But what happens when we change this X value?
+
+Play Stop (X=0.1) Stop (X=1) Stop (X=5)
+
+Hitting Notes
+
+Giving more time to the sound to fade out gives it a totally different feel. It gets more visible when we start and stop the signal right away:
+
+Start and stop quickly Start and stop slowly
+
+The first one sounds like a ticking noise when the other sounds like an actual note played on an instrument.
+
+Various Oscilators
+
+So far we’ve been using a sine wave for our main signal, but we have other options:
+
+Types of oscilators
+It’s enven more interesting when we start playing around with the type of oscilators by setting o.type = type.
+
+Sine Square Triangle Sawtooth
+
+Playing Actual Notes
+
+With the previous code, it becomes fairly simple to have a nice sounding note, but what exactly were we playing? That’s when you have to take frequency into account. For instance, the one people know is that A4 is 440Hz, but there are others.
+
+Note Frequencies in Hz
+
+With this table, you can easily create a mapping in your code to play any given note using its . For the hackathon I used a simple hash mapping that is available in this gist.
+
+To implement this, we just need to add a frequency to our oscilator:
+
+If we change with the value of frequency, we can play any note. For instance:
+
+261.6Hz (C4) 440Hz (A4) 830.6Hz (G#5)
+
+Mix this with the ramp down timings and different signals, and you start to be able to create more interesting sounds.

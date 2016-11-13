@@ -1,0 +1,147 @@
+This is the fifth chapter of the Writing a JavaScript framework series. In this chapter, I am going to explain how to create a simple, yet powerful data binding library with the new ES6 Proxies.
+
+The series is about an open-source client-side framework, called NX. During the series, I explain the main difficulties I had to overcome while writing the framework. If you are interested in NX please visit the home page.
+
+The series includes the following chapters:
+
+Project structuring
+Execution timing
+Sandboxed code evaluation
+Data binding introduction
+Data Binding with ES6 Proxies (current chapter)
+Custom elements
+Client side routing
+Prerequisites
+
+ES6 made JavaScript a lot more elegant, but the bulk of new features are just syntactic sugar. Proxies are one of the few non polyfillable additions. If you are not familiar with them, please take a quick look at the MDN Proxy docs before going on.
+
+"#ES6 made #JavaScript a lot more elegant. Proxies are one of the few non polyfillable additions." via @RisingStack
+
+CLICK TO TWEET
+
+Having a basic knowledge of the ES6 Reflection API and Set, Map and WeakMap objects will also be helpful.
+
+The nx-observe library
+
+nx-observe is a data binding solution in under 140 lines of code. It exposes the observable(obj) and observe(fn) functions, which are used to create observable objects and observer functions. An observer function automatically executes when an observable property used by it changes. The example below demonstrates this.
+
+The print function passed to observe() reruns every time person.name or person.age changes. print is called an observer function.
+
+If you are interested in a few more examples, please check the GitHub readme or the NX home page for a more lifelike scenario.
+
+Implementing a simple observable
+
+In this section, I am going to explain what happens under the hood of nx-observe. First, I will show you how changes to an observable's properties are detected and paired with observers. Then I will explain a way to run the observer functions triggered by these changes.
+
+Registering changes
+
+Changes are registered by wrapping observable objects into ES6 Proxies. These proxies seamlessly intercept get and set operations with the help of the Reflection API.
+
+The variables currentObserver and queueObserver() are used in the code below, but will only be explained in the next section. For now, it is enough to know that currentObserver always points to the currently executing observer function, and queueObserver() is a function that queues an observer to be executed soon.
+
+The get trap does nothing if currentObserver is not set. Otherwise, it pairs the fetched observable property and the currently running observer and saves them into the observers WeakMap. Observers are saved into a Set per observable property. This ensures that there are no duplicates.
+
+The set trap is retrieving all the observers paired with the modified observable property and queues them for later execution.
+
+You can find a figure and a step-by-step description explaining the nx-observe example code below.
+
+JavaScript data binding with es6 proxy - observable code sample
+
+The person observable object is created.
+currentObserver is set to print.
+print starts executing.
+person.name is retrieved inside print.
+The proxy get trap on person is invoked.
+The observer Set belonging to the (person, name) pair is retrieved by observers.get(person).get('name').
+currentObserver (print) is added to the observer Set.
+Step 4-7 are executed again with person.age.
+${person.name}, ${person.age} is printed to the console.
+print finishes executing.
+currentObserver is set to undefined.
+Some other code starts running.
+person.age is set to a new value (22).
+The proxy set trap on person is invoked.
+The observer Set belonging to the (person, age) pair is retrieved by observers.get(person).get('age').
+Observers in the observer Set (including print) are queued for execution.
+print executes again.
+Running the observers
+
+Queued observers run asynchronously in one batch, which results in superior performance. During registration, the observers are synchronously added to the queuedObservers Set. A Set cannot contain duplicates, so enqueuing the same observer multiple times won't result in multiple executions. If the Set was empty before, a new task is scheduled to iterate and execute all the queued observers after some time.
+
+The code above ensures that whenever an observer is executing, the global currentObserver variable points to it. Setting currentObserver 'switches' the get traps on, to listen and pair currentObserver with all the observable properties it uses while executing.
+
+Building a dynamic observable tree
+
+So far our model works nicely with single level data structures but requires us to wrap every new object-valued property in an observable by hand. For example, the code below would not work as expected.
+
+In order to make this code work, we would have to replace observable({data: {name: 'John'}}) with observable({data: observable({name: 'John'})}). Fortunately we can eliminate this inconvenience by modifying the get trap a little bit.
+
+The get trap above wraps the returned value into an observable proxy before returning it - in case it is an object. This is perfect from a performance point of view too, since observables are only created when they are really needed by an observer.
+
+Comparison with an ES5 technique
+
+A very similar data binding technique can be implemented with ES5 property accessors (getter/setter) instead of ES6 Proxies. Many popular libraries use this technique, for example MobX and Vue. Using proxies over accessors has two main advantages and a major disadvantage.
+
+Expando properties
+
+Expando properties are dynamically added properties in JavaScript. The ES5 technique does not support expando properties since accessors have to be predefined per property to be able to intercept operations. This is a technical reason why central stores with a predefined set of keys are trending nowadays.
+
+On the other hand, the Proxy technique does support expando properties, since proxies are defined per object and they intercept operations for every property of the object.
+
+A typical example where expando properties are crucial is with using arrays. JavaScript arrays are pretty much useless without the ability to add or remove items from them. ES5 data binding techniques usually hack around this problem by providing custom or overwritten Array methods.
+
+Getters and setters
+
+Libraries using the ES5 method provide 'computed' bound properties by some special syntax. These properties have their native equivalents, namely getters and setters. However the ES5 method uses getters/setters internally to set up the data binding logic, so it can not work with property accessors.
+
+Proxies intercept every kind of property access and mutation, including getters and setters, so this does not pose a problem for the ES6 method.
+
+The disadvantage
+
+The big disadvantage of using Proxies is browser support. They are only supported in the most recent browsers and the best parts of the Proxy API are non polyfillable.
+
+A few notes
+
+The data binding method introduced here is a working one, but I made some simplifications to make it digestible. You can find a few notes below about the topics I left out because of this simplification.
+
+Cleaning up
+
+Memory leaks are nasty. The code introduced here avoids them in a sense, as it uses a WeakMap to save the observers. This means that the observers associated with an observable are garbage collected together with the observable.
+
+However, a possible use case could be a central, durable store with a frequently shifting DOM around it. In this case, DOM nodes should release all of their registered observers before they are garbage collected. This functionality is left out of the example, but you can check how the unobserve() function is implemented in the nx-observe code.
+
+Double wrapping with Proxies
+
+Proxies are transparent, meaning there is no native way of determining if something is a Proxy or a plain object. Moreover, they can be nested infinitely, so without necessary precaution, we might end up wrapping an observable again and again.
+
+There are many clever ways to make a Proxy distinguishable from normal objects, but I left it out of the example. One way would be to add a Proxy to a  WeakSet named proxies and check for inclusion later. If you are interested in how nx-observe implements the isObservable() method, please check the code.
+
+Inheritance
+
+nx-observe also works with prototypal inheritance. The example below demonstrates what does this mean exactly.
+
+The get operation is invoked for every member of the prototype chain until the property is found, so the observers are registered everywhere they could be needed.
+
+There are some edge cases caused by the little-known fact that set operations also walk the prototype chain (quite sneakily), but these won't be covered here.
+
+Internal properties
+
+Proxies also intercept 'internal property access'. Your code probably uses many internal properties that you usually don't even think about. Some keys for such properties are the well-known Symbols for example. Properties like these are usually correctly intercepted by Proxies, but there are a few buggy cases.
+
+Asynchronous nature
+
+The observers could be run synchronously when the set operation is intercepted. This would provide several advantages like less complexity, predictable timing and nicer stack traces, but it would also cause a big mess for certain scenarios.
+
+Imagine pushing 1000 items to an observable array in a single loop. The array length would change a 1000 times and the observers associated with it would also execute a 1000 times in quick succession. This means running the exact same set of functions a 1000 times, which is rarely a useful thing.
+
+Another problematic scenario would be two-way observations. The below code would start an infinite cycle if observers ran synchronously.
+
+For these reasons nx-observe queues observers without duplicates and executes them in one batch as a microtask to avoid FOUC. If you are unfamiliar with the concept of a microtask, please check my previous article about timing in the browser.
+
+Data binding with ES6 Proxies - the Conclusion
+
+If you are interested in the NX framework, please visit the home page. Adventurous readers can find the NX source code in this Github repository and the nx-observe source code in this Github repository.
+
+I hope you found this a good read, see you next time when weI’ll discuss custom HTML Elements!
+
+If you have any thoughts on the topic, please share them in the comments.

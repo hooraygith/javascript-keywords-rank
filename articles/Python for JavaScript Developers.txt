@@ -1,0 +1,139 @@
+Special thanks to Brett Langdon for peer reviewing 😁
+
+So recently I began working at a little startup in New York City by the name of Underdog.io, where I discovered that they had a back-end written primarily in Python, a language that I had very little previous exposure to.
+
+While I was hired primarily for my experience with JavaScript and React, the small size of our team means that I frequently have to delve into all parts of the codebase in order to ship a feature. So I had to get well acquainted with Python, very fast.
+
+Unfortunately, I had a hard time finding good resources for learning Python that weren’t targeted to people who haven’t programmed before. I already knew how to program and am familiar with other languages, I just needed to learn the syntax and paradigms of this one specific programming language, Python.
+
+That’s where this blog post comes in. To serve as a quick guide for JavaScript developers who want to get up to speed quickly with Python, but without having to learn what declaring a variable means or what a function is.
+
+This post is assuming you are using Python 3.0.1, so some of the examples might not work with older versions of Python.
+
+Table of contents
+
+Syntax
+Types
+Functions
+Modules
+Object Oriented Programming
+Resources
+Syntax
+
+Declaring variables
+
+Declaring a variable in Python is super simple. Like JavaScript, you don’t have to set the type of the variable when declaring it. And you don’t have to declare the scope of the variable either (let vs var):
+
+You can change the type of a variable by assigning a value of a different type to it:
+
+Unlike JavaScript, variables in Python are always block scoped.
+
+Blocks
+
+Python is a bit more strict than JavaScript when it comes to syntax. In Python, getting indentation off by a single space can prevent your programming from even running (!). This is because Python uses indentation to create blocks instead of braces. For example, this is how you would define a block in JavaScript vs. Python:
+
+Creating a block in JavaScript
+
+Creating a block in Python
+
+If the line containing print(x) had one or more extra spaces, the Python interpreter would throw an IndentationError, because those extra spaces would have created an invalid block.
+
+If that same line had one or more less spaces in it, like this:
+
+The Python interpreter would throw this error:
+
+Because print(x) is in a block that is out of scope of the one that x is declared in.
+
+Control flow
+
+if...else, while, and for blocks in Python are very similar to JavaScript:
+
+if…else
+
+while loop
+
+for loop
+
+For loops are like JavaScript foreach loops:
+
+Types
+
+Python’s type system is a lot like JavaScript’s; it’s there, but it’s not as strict as in other languages like Java or C#.
+
+Practically speaking, variables have types, but you don’t have to declare the types of your variables like you would in a statically typed language such as Java.
+
+Here’s a quick overview of Python’s built in data types:
+
+Numbers
+
+Unlike JavaScript, Python has more than one number type:
+
+Integers: 1, 2, 3
+Floats: 4.20, 4e420
+Complex numbers: 4 + 20j
+Booleans: True, False
+You can perform the same operations on numbers in Python as you can in JavaScript. There’s also an exponentiation operator (**):
+
+Lists
+
+Lists in Python are similar to arrays in JavaScript. Lists can contain a mixture of types:
+
+There’s also a special syntax for slicing elements from lists:
+
+And some handy built-in methods for operating on lists:
+
+You can even concatenate two lists with the + operator:
+
+Strings
+
+Strings in Python are a lot like strings in JavaScript. They are immutable, and individual characters can be accessed like elements in an array:
+
+Dictionaries
+
+Dictionaries are associative arrays, similar to objects in JavaScript. In fact, dictionaries can be declared with a JSON-like syntax:
+
+Dictionaries have a handy method for returning a default value when trying to get the value of a non-existent key:
+
+None
+
+None is equivalent to null in JavaScript. It signifies the absence of a value, and is considered “falsy”.
+
+Functions
+
+Like JavaScript, functions are objects in Python. That means you can pass functions as arguments, or even assign properties to functions:
+
+Modules
+
+Modules in Python aren’t that far off from modules in ES6.
+
+Defining a module
+
+A module in Python is simply a file that contains some Python code.
+
+Unlike JavaScript, you don’t have to declare what is being exported; everything is exported by default.
+
+Importing a module
+
+You can import an entire module in Python:
+
+Or import individual items from a module:
+
+You can also install modules other people have written with pip, a package manager for Python.
+
+Object Oriented Programming
+
+Python has support for object oriented programming with classes and classical inheritance, unlike JavaScript which has prototypes with prototypal inheritance.
+
+Classes
+
+Inheritance
+
+Classes can inherit from other classes:
+
+Resources
+
+There is a lot more to Python than what’s in this guide. I highly recommend you check out the Python docs for tutorials and details about other language features.
+
+And remember, the best way to learn a language is to write it, a lot. So get to coding!
+
+P.S.: If you need an idea for a project, maybe try creating a simple API with Flask?

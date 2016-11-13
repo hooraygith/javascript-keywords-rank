@@ -1,0 +1,141 @@
+This article was peer reviewed by Vildan Softic. Thanks to all of SitePoint’s peer reviewers for making SitePoint content the best it can be!
+
+Handling PDF files within a web application has always been painful to deal with. If you’re lucky, your users only need to download the file. Sometimes, though, your users need more. In the past, I’ve been lucky, but this time, our users needed our application to display a PDF document so they could save metadata related to each individual page. Previously, one might have accomplished this with an expensive PDF plugin, such as Adobe Reader, running inside the browser. However, with some time and experimentation, I found a better way to integrate PDF viewers in a web application. Today, we’ll take a look at how we can simplify PDF handling, using Aurelia and PDF.js.
+
+Overview: The Goal
+Our goal, today, is to build a PDF viewer component in Aurelia that allows two-way data flow between the viewer and our application. We have three main requirements.
+
+We want the user to be able to load the document, scroll, and zoom in and out, with decent performance.
+We want to be able to two-way-bind viewer properties (such as the current page, and the current zoom level) to properties in our application.
+We want this viewer to be a reusable component; we want to be able to drop multiple viewers into our application simultaneously with no conflicts and little effort.
+You can find the code for this tutorial on our GitHub repo, as well as a demo of the finished code here.
+
+Introducing PDF.js
+PDF.js is a JavaScript library, written by the Mozilla Foundation. It loads PDF documents, parses the file and associated metadata, and renders page output to a DOM node (typically a <canvas> element). The default viewer included with the project powers the embedded PDF viewer in Chrome and Firefox, and can be used as a standalone page or as a resource (embedded within an iframe).
+
+This is, admittedly, pretty cool. The problem here is that the default viewer, while it has a lot of functionality, is designed to work as a standalone web page. This means that while it can be integrated within a web application, it essentially would have to operate inside an iframe sandbox. The default viewer is designed to take configuration input through its query string, but we can’t change configuration easily after the initial load, and we can’t easily get info and events from the viewer. In order to integrate this with an Aurelia web application — complete with event handling and two-way binding — we need to create an Aurelia custom component.
+
+Note: if you need a refresher on PDF.js, check out our tutorial: Custom PDF Rendering in JavaScript with Mozilla’s PDF.js
+
+The Implementation
+To accomplish our goals, we’re going to create an Aurelia custom element. However, we’re not going to drop the default viewer into our component. Instead, we’re going to create our own viewer that hooks into the PDF.js core and viewer libraries, so that we can have maximum control over our bindable properties and our rendering. For our initial proof-of-concept, we’ll start with the skeleton Aurelia application.
+
+The boilerplate
+As you can see if you follow the link above, the skeleton app has a lot of files in it, many of which we’re not going to need. To make life simpler, we have prepared a stripped down version of the skeleton, to which we have added a couple of things:
+
+A Gulp task to copy our PDF files to the dist folder (which Aurelia uses for bundling).
+The PDF.js dependency has been added to package.json.
+In the root of the app, index.html and index.css have received some initial styling.
+Empty copies of the files we’re going to be working in have been added.
+The file src/resources/elements/pdf-document.css contains some CSS styling for the custom element.
+So let’s get the app up and running.
+
+First off, ensure that gulp and jspm are installed globally:
+
+Then clone the skeleton and cd into it.
+
+Then install the necessary dependencies:
+
+Finally run gulp watch and navigate to http://localhost:9000. If everything worked as planned, you should see a welcome message.
+
+Some more set-up
+The next thing to do is to find a couple of PDFs and place them in src/documents. Name them one.pdf and two.pdf. To test our custom component to the max, it would be good if one of the PDFs were really long, for example War and Peace which can be found on the Gutenberg Project.
+
+With the PDFs in place, open up src/app.html and src/app.js (by convention the App component is the root or the Aurelia app) and replace the code that is there with the contents of these two files: src/app.html and src/app.js. We’ll not touch on these files in this tutorial, but the code is well commented.
+
+Gulp will detect these changes automatically and you should see the UI of our app render. That’s it for the setup. Now it’s on with the show …
+
+Creating an Aurelia Custom Element
+We want to create a drop-in component that can be used in any Aurelia view. Since an Aurelia view is just a fragment of HTML wrapped inside of an HTML5 template tag, an example might look like this:
+
+The <pdf-document> tag is an example of a custom element. It, and its attributes (like scale and page) aren’t native to HTML, but we can create this using Aurelia custom elements. Custom elements are straightforward to create, using the basic building blocks of Aurelia: Views and ViewModels. As such, we’ll first scaffold our ViewModel, named pdf-document.js, like so:
+
+The main thing to notice here is the @bindable decorator; by creating bindable properties with the configuration defaultBindingMode: bindingMode.twoWay, and by creating handler methods in our ViewModel (urlChanged, pageChanged, etc) we can monitor and react to changes to the associated attributes that we place on our custom element. This will allow us to control our PDF viewer simply by changing properties on the element.
+
+Then, we’ll create the initial view to pair with our ViewModel.
+
+Integrating PDF.js
+PDF.js is split into three parts. There’s the core library, which handles parsing and interpreting a PDF document; the display library, which builds a usable API on top of the core layer; and finally, the web viewer plugin, which is the prebuilt web page we mentioned before. For our purposes, we’ll be using the core library through the display API; we’ll be building our own viewer.
+
+The display API exports a library object named PDFJS, which allows us to set up some configuration variables and load our document using PDFJS.getDocument(url). The API is completely asynchronous — it sends and receives messages from a web worker, so it builds heavily upon JavaScript promises. We’ll be primarily working with the PDFDocumentProxy object returned asynchronously from the PDFJS.getDocument() method, and the PDFPageProxy object returned asynchronously from PDFDocumentProxy.getPage().
+
+Although the documentation is a bit sparse, PDF.js has some examples for creating a basic viewer here, (demo) and here (demo). We’ll build upon these examples for our custom component.
+
+Web worker integration
+PDF.js uses a web worker to offload its rendering tasks. Because of the way that web workers run in a browser environment (they are effectively sandboxed), we’re forced to load the web worker using a direct file path to the JavaScript file, instead of the usual module loader. Luckily, Aurelia provides a loader abstraction so that we don’t have to reference a static file path (which could change when we bundle our application).
+
+If you’re following along with our version of the repo, you will have already installed the pdfjs-dist package, otherwise, you’ll need to do so now (e.g. with jspm jspm install npm:pdfjs-dist@^1.5.391). Then we’ll inject Aurelia’s loader abstraction using Aurelia’s dependency injection module, and use the loader to load the web worker file in our constructor, like so:
+
+Loading our pages
+The PDF.js library handles loading, parsing, and displaying PDF documents. It comes with built-in support for partial downloads and authentication. All we have to do is provide the URI of the document in question, and PDF.js will return a promise object resolving to a JavaScript object representing the PDF documents and its metadata.
+
+Loading and displaying the PDF will be driven by our bindable attributes; in this case, it will be the url attribute. Essentially, when the URL changes, the custom element should ask PDF.js to make a request for the file. We’ll do this in our urlChanged handler, with some changes to our constructor to initialize some properties and some changes to our detached method for cleanup purposes.
+
+For each page of our document, we’ll create a <canvas> element in the DOM, housed inside a scrollable container with a fixed height. To implement this, we’ll use Aurelia’s basic templating functionality, using a repeater. Because each PDF page can have its own size and orientation, we’ll set the width and height of each canvas element based on the PDF page viewport.
+
+Here’s our view:
+
+After we’ve loaded our PDF document, we need to get the sizes of each page in the PDF, so that we can match each canvas size to its page size. (Doing this at this point allows us to set up our viewer for scrolling; if we didn’t do this now, we wouldn’t have the correct heights for each page.) So, after loading each page, we queue a task to resize the canvas element using Aurelia’s TaskQueue abstraction. (This is for DOM performance reasons. You can read more about microtasks here).
+
+Here’s our ViewModel:
+
+Save your work and Gulp should rerender the page. You’ll notice that the container shows the correct number of pages for the respective PDFs. Only problem is that they are blank. Let’s fix that!
+
+Rendering our pages
+Now that we’ve loaded our pages, we need to be able to render them to a DOM element. To accomplish this, we’ll rely on the rendering functionality of PDF.js. The PDF.js viewer library has an asynchronous API dedicated to rendering pages; there’s a great example on their site that shows how to create a renderContext object and pass it to the PDF.js render method. We’ll lift this code out of the example and wrap it inside a render function:
+
+src/resources/elements/pdf-document.js
+
+Rendering in PDF.JS is somewhat expensive. As such, we want to limit the load; we only want to render what’s currently visible, so we’ll limit rendering to pages that are within the visible boundary instead of rendering everything at once. We’ll do some simple math to check what’s in the viewport:
+
+When we first load the document, and when we scroll, we’ll run these viewport checks. Now, on load, we’ll simply render what’s visible, like so.
+
+Reload the application and you will see that the first page of each PDF renders.
+
+Implementing scrolling
+To provide a familiar and seamless experience, our component should display the pages as individual parts of a fully scrollable document. We can achieve this by making our container have a fixed height with scrolling overflow, through CSS.
+
+In order to maximize performance with larger documents, we’ll do a few things. First, we’ll utilize Aurelia’s TaskQueue to batch changes to the DOM. Second, we’ll keep track of pages that PDF.js has already rendered so it doesn’t have to redo work that it’s already done. Finally, we’ll only render visible pages after scrolling has stopped by using Aurelia’s debounce binding behavior. This is the method that we’ll run when we scroll:
+
+And here’s our view; we utilize Aurelia’s event binding in scroll.trigger, using the method we defined, along with the debounce binding behavior.
+
+We are binding the page property in the viewer. When it changes, we want to update the scroll position to display the current page. We also want this to work the other way; as we scroll through the document, we want the current page number to update to the page we’re currently viewing. Thus, we’ll add the following two methods to our ViewModel:
+
+We’ll call our pageHandler method in our scroll.trigger event in our container.
+
+Note: Due to a current limitation in Aurelia’s templating, it’s not possible to declare multiple methods in an event handler with separate binding behaviors. We work around this by adding these lines to the top of our ViewModel…
+
+…and placing the new method on the scroll.trigger2 event.
+
+Gulp should reload the application and you’ll see that new pages of the PDF will render as they scroll into view. Yay!
+
+Implementing zooming
+When we zoom, we want to update the current zoom level. We do that in our scaleChanged property handler. Essentially, we resize all of our canvas elements to reflect the new viewport size of each page with the given scale. Then, we re-render what’s in the current viewport, restarting the cycle.
+
+The End Result
+Let’s review our target goals:
+
+We want the user to be able to load the document, scroll, and zoom in and out, with decent performance.
+We want to be able to two-way-bind viewer properties (such as the current page, and the current zoom level) to properties in our application.
+We want this viewer to be a reusable component; we want to be able to drop multiple viewers into our application simultaneously with no conflicts and little effort.
+The final code can be found on our GitHub repo, as well as a demo of the finished code here. While there is room for improvement, we’ve hit our target!!
+
+Post-Project Analysis and Improvements
+There’s always room for improvement, and it’s always a good practice to carry out a post-project analysis and identify areas to address in a future iteration. These are some things that I’d like to upgrade in terms of the PDF viewer implementation:
+
+Individual page components
+Currently, this proof-of-concept only allows for a scrolling viewport. Ideally, we’d be able to render any page anywhere, even outside of the viewer – for instance, generating PDF thumbnails as individual elements. Creating a <pdf-page> custom element or something along those lines could provide this functionality, while the viewer could simply use these elements via composition.
+
+API optimization
+PDF.js has an extensive API. While there are good examples for using PDF.js, its display API could use more documentation. There may be cleaner, more optimal ways to achieve our goals with the viewer API.
+
+Virtual scrolling and performance optimization
+Currently, the number of canvas elements inside of the document viewer is equal to the number of pages in the document. All of the canvases exist inside the DOM, which can be very expensive for large documents.
+
+An Aurelia plugin exists – the ui-virtualization plugin (demo) – which vastly improves performance for very large datasets by dynamically adding and removing elements in the DOM to correspond with the active viewport. Ideally, the PDF viewer would be able to incorporate this for improved performance (to avoid having thousands of canvases in the DOM, which really hurts performance). This optimization, in conjunction with the individual page components, could really make a huge difference for large documents.
+
+Creating a Plugin
+Aurelia provides a plugin system. Converting this proof-of-concept into an Aurelia plugin would make it a drop-in resource for any Aurelia application. The Aurelia Github repository provides a plugin-skeleton project that would be a good point to kickstart development. That way, others could use this functionality without having to rebuild it!
+
+Going Forward
+Handling PDF files within a web application has always been painful to deal with. But with the resources available today, we can do much more than we have before by composing libraries and their functionality. Today, we’ve seen an example of a basic PDF viewer – one that could be extended with custom functionality, since we have full control over it. The possibilities are endless! Are you ready to build something? Let me know in the comments below.

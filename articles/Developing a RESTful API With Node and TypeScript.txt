@@ -1,0 +1,176 @@
+This tutorial details how to develop a RESTful API with NodeJS, ExpressJS, and TypeScript using test-driven development (TDD).
+
+We will be using:
+
+NodeJS v7.0.0
+ExpressJS v4.14.0
+TypeScript v2.0.6
+Additionally, we will use tsconfig.json to configure the project, Gulp to automate transpilation, and d.ts for managing typings with npm.
+
+Contents
+
+Project Setup
+Express Config
+The API
+First Endpoint
+Second Endpoint
+What’s Next?
+Project Setup
+
+To start, we need to set a means to transpile TypeScript into JavaScript that works well with Node. Enter the tsconfig.json file. This is similar to a package.json or .babelrc or really any project-level configuration file you may use. As you can probably guess, it will configure the TypeScript compiler for the project.
+
+Make a new directory to hold the project, and add a tsconfig.json file:
+
+We’ll use a pretty basic configuration for today:
+
+Here:
+
+in compilerOptions we tell TypeScript that we’ll be targeting ES2015 and that we’d like a CommonJS style module as output (the same module style that Node uses)
+the include section tells the compiler to look for .ts files in the “src” directory
+the exclude section tells the compiler to ignore anything in “node_modules”
+NOTE: Review the TypeScript docs if you want more info on all the options you can define in the tsconfig.json file, They are the same options that you can pass directly to the TypeScript compiler wrapper.
+
+Add a “src” directory:
+
+Before moving any further, let’s make sure this configuration works like we expect using the TypeScript compiler wrapper. Create a package.json and install TypeScript:
+
+Create a new file called test.ts within the “src” directory and add the following:
+
+Finally, let’s run this one-liner through the compiler. From the project root, run the tsc that we installed above in our test file with:
+
+Given no arguments, tsc will first look at tsconfig.json for instruction. When it finds the config, it uses those settings to build the project. You should see a new file inside of “src” called test.js with the same line of code in it. Awesome!
+
+Now that the compiler is installed and working, let’s change up the config to make things easier on ourselves. First, we’ll add an outDir property to the compilerOptions of tsconfig.json to tell TypeScript to place all of our transpiled JavaScript into a different directory rather than compiling the files right next to their source .ts files:
+
+Remove the test.js file from the “src” folder. Now, run the compiler again, and you’ll see that test.js is delivered to the dist directory.
+
+This is much nicer, but let’s take it one step further. Instead of returning to the terminal after each change and manually running the compiler each time let’s automate the process with Gulp:
+
+NOTE: You’ll also want to globally install gulp to trigger Gulp tasks easily from the command line: npm install -g gulp@3.9.1
+
+Add a gulpfile.js to the root of the directory. This is where we’ll automate the compiling of our source files:
+
+Pull in the tsconfig.json and pass it to gulp-typescript for configuration
+Tell gulp-typescript to transpile our project and deliver it to “dist”
+Tell Gulp to watch our source .ts files, so that our transpiled JavaScript automatically gets rebuilt upon file changes
+Add the code:
+
+To test this out, remove dist/test.js and run gulp from the project root. You’ll see Gulp start up, and test.js should be compiled again and placed into “dist”. Awesome! Our project is now configured.
+
+Let’s move on to working with Express…
+
+Express Config
+
+For our Express server, we’ll use the express-generator as our template. We’ll start with what would be the “bin/www” file and create an HTTP server, initialize it, and then attach our Express app to it.
+
+Install Express along with debug (to provide some nice terminal output while developing):
+
+In TypeScript, when you install third-party packages, you should also pull down the package’s type definitions. This tells the compiler about the structure of the module that you’re using, giving it the information needed to properly evaluate the types of structures that you use from the module.
+
+Before TypeScript 2.0, dealing with .d.ts (type definition) files could be a real nightmare. The language had a built in tool, tsd, but it was a bear to work with and you had to decorate your TypeScript files with triple-slash comments to pull declarations into your file. Then typings came along and things were much better, but there were still some issues and now you had another separate package manager to manage in your project.
+
+With TypeScript 2.0, TypeScript definitions are managed by npm and installed as scoped packages. This means two things for you:
+
+Dependency management is simplified
+To install a type module, prefix its name with @types/
+Install the type definitions for Node, Express, and debug:
+
+With that, we’re ready to create the HTTP server. Rename src/test.ts to src/index.ts, remove the console log, and add the following:
+
+If you’re using an editor with rich TypeScript support, it’s not going to appreciate import App from './App';, but just ignore it for now. The rest of this file is pretty straightforward:
+
+Use debug to set up some terminal logging for the app
+Get a port value from the environment, or set a default port number of 3000
+Create the HTTP server, and pass App to it (this will be our Express app)
+Set up some basic error handling and a terminal log to show us when the app is ready and listening
+Since this file will start the app, let’s also add a "start" script to package.json for convenience:
+
+Before we can start the app up, let’s make the App.ts file that we referenced on in index.ts. It’s also a good time to go ahead and install the dependencies we’ll use in the Express application.
+
+Inside of App.ts let’s create the App class to package up and configure our Express server. An instance of App will:
+
+Hold a reference to our instance of Express
+Automatically configure any middleware that we want to use
+Attach any routers/route handlers that we create
+Essentially, it’s going to bootstrap the app and deliver it to the call to http.createServer in index.ts.
+
+App.ts:
+
+Here’s a quick rundown:
+
+The App.express field holds a reference to Express. This makes it easier to access App methods for configuration and simplifies exporting the configured instance to index.ts.
+App.middleware configures our Express middleware. Right now we’re using the morgan logger and body-parser.
+App.routes will be used to link up our API endpoints and route handlers.
+NOTE: If you have a text editor with rich TypeScript support, the error in index.ts should have disappeared.
+
+Currently, there’s a simple placeholder handler for the base URL that should return a JSON payload with { "message": "Hello World!" }. Before writing more code, let’s make sure that we’re starting with a working, listening, and hopefully responding server. We’re going to use httpie for this quick sanity check.
+
+Compile, and then run the server:
+
+To test, open a new terminal window and run:
+
+If everything has gone well, you should get a response similar to this:
+
+The server is listening! Now we can start building the API.
+
+The API
+
+Since we’re good developers (and citizens), let’s utilize TDD (test-driven development) while we build out the API. That means we want to set up a testing environment. We’ll be writing our test files in TypeScript, and using Mocha and Chai to create the tests. Let’s start by installing these to our devDependencies:
+
+If we write out tests in .ts files, we’ll need to make sure that Mocha can understand them. By itself, Mocha can only interpret JavaScript files, not TypeScript. There are a number of different ways to accomplish this. To keep it simple, we’ll leverage ts-node, so that we can provide TypeScript interpretation to the Mocha environment without having to transpile the tests into different files. ts-node will interpret and transpile our TypeScript in memory as the tests are run.
+
+Start by installing ts-node:
+
+Now, in package.json, add a test script to run mocha with the ts-node register:
+
+With the environment all set up, let’s write our first test for the “Hello World” route we created in App.ts. Start by adding a “test” folder to the route, and add a file called helloWorld.test.ts:
+
+In the terminal, run npm test you should see both test pass for the baseRoute describe block. Excellent! Now we can test our routes as we build out the API.
+
+First Endpoint
+
+Our API will be delivering data on superheros, so we’ll need to have a datastore for the API to access. Rather than setting up a full database, for this example let’s use a JSON file as our “database”. Grab the data here and save it to a new file called data.json in the “src” folder.
+
+With this little store of data, we’ll implement a CRUD interface for the superhero resource. To start, let’s implement an endpoint that returns all of our superheros. Here’s a test for this endpoint:
+
+Add this to a new file called test/hero.test.ts.
+
+To summarize, the test asserts that:
+
+the endpoint is at /api/v1/heroes
+it returns a JSON array of hero objects
+we can find Wolverine, and his object contains all the keys that we expect
+When you run npm test, you should see this one fail with a Error: Not Found in the terminal. Good. This is expected since we haven’t set up the route yet.
+
+It’s finally that time: Let’s implement our CRUD routes!
+
+To start, create a new folder src/routes and create a new file inside the directory named HeroRouter.ts. Inside of here, we’ll implement each CRUD route for the superhero resource. To hold each route, we’ll have a HeroRouter class that defines the handler for each route, and an init function that attaches each handler to an endpoint with the help of an instance of Express.Router.
+
+We also need to modify the routes function of App to use our new HeroRouter. Add the import at the top of App.ts:
+
+Then add the API endpoint to private routes(): void:
+
+Now run npm test and ensure that our tests pass:
+
+Second Endpoint
+
+Now we’re really rolling! Before moving on though, let’s break the process down since we’ll be repeating it to create and attach each of our route handlers:
+
+Create a method on HeroRouter that takes the arguments of your typical Express request handler: request, response, and next.
+Implement the server’s response for the endpoint.
+Inside of init, use HeroRouter’s instance of the Express Router to attach the handler to an endpoint of the API.
+We’ll follow this same workflow for each endpoint, and can leave App alone. All of our HeroRouter endpoints will be appended to /api/v1/heroes. Let’s implement a GET handler that returns a single hero by the id property. We’ll test the endpoint by looking for Luke Cage, who has an id of 1.
+
+And the route handler:
+
+Run the tests!
+
+What’s Next?
+
+For the hero resource, we should have endpoints for updating a hero and deleting a hero, but we’ll leave that for you to implement. The structure that we’ve set up here should guide you through creating those last endpoints.
+
+Once the hero resource is implemented, we could add more resources to the API easily. To follow the same process we would:
+
+Create a new file inside of src/routes to be the router for the resource.
+Attach the resource router to the Express app inside of the routes method of App.
+Now you’re up and running with Express and TypeScript 2.0. Go build something! You can grab the code from the typescript-node-api repo. Cheers!

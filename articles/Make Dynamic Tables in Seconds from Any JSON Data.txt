@@ -1,0 +1,153 @@
+This article was peer reviewed by Stephan Max and Simon Codrington. Thanks to all of SitePoint’s peer reviewers for making SitePoint content the best it can be!
+
+Servants unfolding a table
+
+Standard HTML tables can be great if you are just trying to layout some basic data, but what if you are looking for more from your tables? If you need to fetch your data from an external API, make your table sortable or editable, then you are going to need something that packs a bit more of a punch.
+
+If this sounds familiar, then Tabulator is the library for you. Tabulator is a lightweight jQuery UI plugin designed to make building complex interactive tables a doddle, using only a few lines of JavaScript you can turn almost any data source into a beautifully formatted interactive table.
+
+In this tutorial I will take you through the basics of creating your first Tabulator, then expand on some of the options available to add extra features to your tables.
+
+Building Your First Tabulator
+Let’s start off by creating a very simple table.
+
+As Tabulator is a jQuery widget you need to include the jQuery and jQuery UI libraries, either from a local source or a CDN of your choice.
+
+You will need to get yourself a copy of the Tabulator library, which can be cloned from the GitHub repo at https://github.com/olifolkerd/tabulator, and include the tabulator.css and tabulator.js files in your project.
+
+Create a <div> element to hold the table:
+
+Let’s turn that element into a Tabulator with some JavaScript:
+
+And there you have it, a functioning table!
+
+OK, so we aren’t quite there yet. To finish our table we need to define the columns and load some data.
+
+Defining the Columns
+To define the layout of the table, we need to provide some information about each of its columns.
+
+We do this by passing a column definition array to the Tabulator constructor. Each object in the array represents a column of the table, and contains its setup parameters:
+
+There are a large number of column parameters available, in this demo we will cover a few of these:
+
+title – Required – The title that will be displayed in the header for the column
+field – Required – The key for the column in the data array
+align – Text alignment for the column (left|center|right)
+width – Column width (if not set the system will determine the best fit)
+sortable – Toggles whether the user can sort data by the column
+sorter – How to sort data in the column (defaults to string)
+formatter – How to format data in the column (defaults to string)
+onClick – Callback for when user clicks on a cell in the column
+editable – Determines if this data is editable by the user
+editor – Editor to be used when cell in the column is editable
+visible – Show or hide the column
+Loading Data into Your Table
+The final stage of building your new Tabulator is to load in some data. There are several options for this, and we will touch briefly on each one here.
+
+JavaScript array
+You can pass in an array of data using the setData method. This takes an array, with each row of the table being defined by an object.
+
+Lets create some sample data:
+
+Then assign it to our table:
+
+Ajax request
+To retrieve JSON formatted data from a remote source, you can pass a URL to the setData method and it will perform the Ajax request for you.
+
+Additional request parameters can be passed in an object with the URL.
+
+HTML table
+You can also convert an existing HTML table into a Tabulator.
+
+Create your HTML table:
+
+Then call the Tabulator constructor on the table element to extract the headers and data automatically:
+
+The End Result
+You have built your table, defined your columns and loaded your data, now you have a fully functioning interactive table. Your working Tabulator should look something like this:
+
+
+Additional Features
+But wait there’s more! Why settle for a simple text based table when there is so much more that can be done to improve the look, feel and interactivity of your table. In the next few sections, we will cover some of the additional features you can add to enhance your Tabulator.
+
+Sorting
+Sorting is enabled by default on all columns, clicking on any column header will sort the data by that column.
+
+Sorting can be enabled or disabled on a per-column basis using the sortable parameter.
+
+By default, all columns are sorted as text. You can specify a different sorter with the sorter parameter.
+
+Several builtin sorters are available:
+
+string – Sorts as strings of characters (default option)
+number – Sorts as numbers (integer or float, will also handle numbers using “,” separators)
+alphanum – Sorts as alpha numeric string
+boolean – Sorts as booleans
+date – Sorts as dates
+To define a custom sorter, pass a callback to the sorter parameter. It should return the difference between the two values being compared.
+
+Formatting
+With Tabulator, you’re not fixed to displaying your data as plain text. Using formatters you can decide how you want each column to look.
+
+A variety of inbuilt formatters are included:
+
+plaintext – Display the value of the cell as text. (default option)
+textarea – Shows text with carriage returns intact (great for multiline text)
+money – Formats a number into currency notation (eg. 1234567.8901 -> 1,234,567.89)
+email – Renders data as an anchor with a mailto: link to the given value
+link – Renders data as an anchor with a link to the given value
+tick – A green tick if the value is (true|’true’|’True’|1) and an empty cell if not
+tickCross – A green tick if the value is (true|’true’|’True’|1) and a red cross if not
+star – A graphical star rating based on integer values
+progress – A progress bar that fills the cell from left to right (using values 0-100 as a percentage of width)
+You can set a column’s formatter with the formatter parameter.
+
+To define a custom formatter, pass a callback to the formatter parameter. The callback should return the HTML to be displayed in the cell.
+
+Filtering
+There are often times when you need to only display a subset of data to your users. You can filter data using the setFilter function.
+
+The function takes three arguments, the field to be filtered, the comparison function (=, <, <=, >, >=, !=, like), and the filter value.
+
+To perform a more complex filter you can pass a callback to the setFilter function. The callback must return a boolean, with true representing a match.
+
+Clear existing filters with the clearFilter function.
+
+Editing
+One of the major benefits of using Tabulator over a standard HTML table is the ability to edit data in the table.
+
+A number of preconfigured editors are available:
+
+input – Plain text
+textarea – Multi-line text, allows the row to vertically resize to fit the text as it is entered
+number – Numbers with increment and decrement buttons
+tick – Checkbox
+star – Star ratings (can use left/right arrow keys and enter for selection as well as mouse)
+progress – Progress bar (can use left/right arrow keys and enter for selection as well as mouse)
+Columns can be set as editable using the editable parameter.
+
+By default, an editor will be used that matches the formatter for that column. To specify a different editor, use the editor parameter.
+
+To define a custom editor, pass a callback to the editor parameter. It should return the editor element to be displayed in the cell. Returning false will abort the edit and prevent the cell from being selected.
+
+To access the data stored in the table, use the getData function. This will return an array of row data objects.
+
+A Fully Featured Example
+If we combine all the lessons we have learned above, we can create a feature-rich, interactive table.
+
+
+The Tip of the Iceberg
+We have covered how to create a basic Tabulator and add features to enhance its appearance and usability.
+
+This article only covers the tip of the iceberg when it comes to creating and customizing your tables. The library is packed with features to help provide an even richer experience for users:
+
+Row grouping
+Movable rows and Columns
+Pagination
+CSS Styling and Theming
+Progressive rendering for large data sets
+Persistent column layout (stores user preferences in a cookie)
+Callbacks at every stage of table rendering and every type of user interaction
+I hope this article has shown you how to take your basic HTML tables to the next level, adding interactivity and style to your data.
+
+Happy Tabulating!

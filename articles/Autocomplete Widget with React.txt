@@ -1,0 +1,141 @@
+This project will guide you through building an autocomplete function similar to the one that you might see in Slack (a popular messaging app), as shown in figure 1, when you type something in the search box. For simplicity, our widget will work with room names (the rooms in a chat application).
+
+Figure 1
+Figure 1
+The autocomplete widget will have (figure 2):
+
+An input field
+A list of options filtered according to the entered characters
+An Add button (figure 3)
+Figure 2
+Figure 2
+The filtering of the matches will be done using the entered characters as the first characters of the option. In other words, there is a simple comparison that allows us to autocomplete the name of the room (figure X). For example, if you type “mac” and you have “Mac OS X” and “Apple Mac,” then only “Mac OS X” will be shown as a match, not both options.
+
+[Sidenote]
+
+Reading blog posts is good, but watching video courses is even better because they are more engaging.
+
+A lot of developers complained that there is a lack of affordable quality video material on Node. It's distracting to watch to YouTube videos and insane to pay $500 for a Node video course!
+
+Go check out Node University which has FREE videos courses on Node: node.university.
+
+[End of sidenote]
+
+
+NOTE : The options will be stored in MongoDB using the native MongoDB Node.js driver. For the web server, I’m using Express.js.
+
+The Add button will be shown only when there are no matches (figure 3).
+
+Sidenote: If you like this post and interested in a corporate on-site JavaScript, Node.js and React.js training to boost productivity of your team, then contact NodeProgram.com.
+
+Figure 3
+Figure 3
+The new option will be saved to the database via an XHR call to our REST API. We can use this new room name in the future (figure 4), just like our initial room names.
+
+Figure 4
+Figure 4
+To get started with the project, create a new folder. The project structure looks like this:
+
+Let’s cover them one by one. __tests__ is the folder with the Jest tests. By now familiar to you, the node_modules folder is the Node.js dependencies folder (from npm’s package.json). Then there are public, public/css, and public/js folders, which contain the static files for our application. The app.js file will be bundled by Gulp and Browserify from the dependencies and the JSX source code. The source code itself is in the src folder. I created src/build for the files compiled from JSX into native JavaScript.
+
+views is just a folder for Handlebars templates. If you feel confident about your React skills by now, you don’t have to use a template engine; you can use React as the Node.js template engine!
+
+In the root of the project, you will find gulpfile.js, which enables build tasks, package.json, which contains project metadata, rooms.json, which contains the MongoDB seed data, and index.js, with the Express.js server and its routes for the API server (GET and POST /rooms).
+
+This project’s structure is somewhat similar to ch8/board-react2, and we’ll be rendering React components on the server, testing them with Jest, and making AJAX/XHR requests with request within the Reflux data store.
+
+Start by copying (it’s better to copy by typing instead of copying and pasting) this package.json:
+
+The interesting thing here is scripts:
+
+The test is for running Jest tests, and start is for building and launching our server.
+I also added seed data for the room names, which you can run with $ npm run seed.
+The database name is autocomplete, and the collection name is rooms. This is the content of the rooms.json file:
+
+Once you run the seed command, it will print this (MongoDB must be running as a separate process):
+
+In this project, we’ll be using npm modules for the dependencies like React, request, and React DOM. This is possible due to Browserify. Here’s the gulpfile.js file, which has a scripts task in which Browserify parses src/build/app.js and includes all the dependencies in public/js/app.js:
+
+For app.js to exist in the src/build folder, there is a build task that precedes the scripts task. The scripts task compiles all the JSX files into native JS files.
+
+Lastly in gulpfile.js, the nodemon and watch tasks are for convenience. They’ll restart the Node.js server on a file change and rebuild JS files on a JSX file change, respectively.
+
+An important part of the index.js file is the way we include the libraries and components:
+
+The index.js file has GET and POST routes for /rooms. If you’re not familiar with Express.js, there’s a quick-start guide in the cheatsheet. This post is on React, not Express. :) We’ll only cover the / route in Express. In it, we render React on the server by hydrating components with the room objects:
+
+This is the same approach that you saw in the previous example, ch8/board-react2: the props are in the scripts tag.
+
+There are two props to the Autocomplete component: options and url. The options are the names of the rooms for the chat and the url is the URL of the API server (http://localhost:3000/rooms in our case).
+
+According to the principles of TDD/BDD, let’s start with tests. In the __tests__/autocomplete.test.js file we have:
+
+The rooms variable is just hardcoded data for the room names:
+
+Then we include the libraries. They are npm modules, except for src/build/autocomplete.js, which is a file:
+
+The fD object is just a convenience (less typing means fewer errors):
+
+The next line is using TestUtils from react-addons-test-utils to render the Autocomplete component:
+
+Now we get the input field, which will have a class option-name. These will be our options:
+
+Then, we can write the actual tests:
+
+We can get all the option-name elements from the widgets and compare them against the number 4, which is the number of rooms in the rooms array:
+
+The next test changes the input field value and then checks for that value and the number of the offered autocomplete option. There should be only a single match, which is react:
+
+The last test will change the room name field to ember, and there should be no matches, only the Add button:
+
+The tests should fail for now, but that’s okay. Onward to implementing our browser script, which is src/app.jsx:
+
+The global vars rooms and url will be provided via the props local from the Express.js tag (the script HTML tag). In the index.handlebars file, you can see the props and autocomplete locals being output:
+
+Finally, the autocomplete.jsx file with our component. We start by importing the libraries in the CommonJS/Node.js style (thanks to Browserify, this will be bundled for the browser’s consumption):
+
+Again, this alias is for convenience:
+
+We’ll be using Reflux. These are the actions for our data store:
+
+Let’s create the store and set up the actions. We can use the listenables property:
+
+onSetUrl will set the REST API server URL to perform AJAX/XHR requests:
+
+onSetOptions will create a property called options. This will be all the available options (i.e., unfiltered):
+
+In onLoadOptions, we perform the GET request using the request library. It’s similar to jQuery’s $.get:
+
+Once we get the options, we assign them to this.options and trigger the callback, which is in the component that listens to the loadOptions event:
+
+The onAddOptions method performs a POST request and puts the newly created record into the this.options array:
+
+We’re using CommonJS syntax, so we can declare the Autocomplete component and export it like this:
+
+The next line enables the auto-syncing of the optionsStore’s options with our state options:
+
+In the initial state function, we set the URL and options from props. The filtered options will be the same as all of the options, and the current option (input field value) is empty:
+
+When the component is about to be mounted, we load the options from the server by invoking the optionsStore action:
+
+The filter method will be called on every change of the <input> field. The goal is to leave only the options that match user input:
+
+As for addOption, this method handles the addition of a new option (in the event that there are no matches) by invoking the store’s action:
+
+There is a callback in the action that will ensure that the list of options is updated once the new value is part of the list:
+
+Finally, the render method has a controlled component, <input>, with an onChange event listener, this.filter:
+
+The list of filtered options is powered by the state filteredOptions, which is updated in the filter method. We simply iterate over it and print _id as keys and links with option.name:
+
+The last element is the Add button, which is shown only when there is no filteredOptions (no matches):
+
+If you’ve followed all the steps, you should be able to install the dependencies with
+
+and then launch the app with this command (you must have started MongoDB first with $ mongod):
+
+The tests will pass after you run the command:
+
+Optionally, you can seed the database with $ npm run seed.
+
+If for some reason your project is not working, the full tested source code is in ch8/autocomplete and on GitHub.

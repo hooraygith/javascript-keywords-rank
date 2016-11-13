@@ -1,0 +1,55 @@
+oday we’re happy to announce our release candidate for TypeScript 2.1! If you aren’t familiar with it, TypeScript is a language that adds optional static types to JavaScript, and brings new features from ES6 and later to whatever JavaScript runtime you’re using.
+
+As usual you can get the RC through NuGet, or just by running
+
+You can then easily use the RC release with Visual Studio Code or our Sublime Text Plugin.
+
+While TypeScript 2.1 has a lot of great features coming up, we’d like to highlight how much more powerful TypeScript 2.1’s inference will be, as well as how much easier it will be to write asynchronous code in all runtimes.
+
+Smarter Inference
+TypeScript 2.1 now makes it easier to model scenarios where you might incrementally initialize variables. Since a lot of code is written like this in JavaScript, this makes it even easier to migrate existing codebases to TypeScript.
+
+To understand better, let’s start off by talking about the any type.
+
+Most of the time, if TypeScript can’t figure out the type of a variable, it will choose the any type to be as flexible as possible without troubling you. We often call this an implicit any (as opposed to an explicit one, where you would have written out the type).
+
+From that point on, you can do anything you want with those values. For many people, that behavior was too loose, which is why the --noImplicitAny option will warn you whenever a type couldn’t be inferred.
+
+With TypeScript 2.0 we built out a foundation of using control flow analysis to track the flow of types throughout your program. Because that analysis examines the assignments of every variable, we’ve leveraged that same foundation in TypeScript 2.1 to more deeply examine the type of any variable that seems like it’s destined for a better type. Instead of just choosing any, TypeScript will infer types based on what you end up assigning later on.
+
+Let’s take the following example.
+
+When it comes to assignments, TypeScript will still trust you and allow you to assign anything you want to x. However, for any other uses, the type checker will know better by climbing up and looking at whatever you’ve actually done with x.
+
+The same sort of tracking is now also done for empty arrays! This means better completions:
+
+And it also means that TypeScript can catch more obvious errors:
+
+
+The end result of all this is that you’ll see way fewer implicit any errors in the future, and get much better tooling support.
+
+Downlevel Async Functions
+Support for down-level asynchronous functions (or async/await) is coming in 2.1, and you can use it in today’s release candidate! async/await is a new feature in ECMAScript 2017 that allows users to write code around promises without needing to use callbacks. async functions can be written in a style that looks synchronous, but acts asynchronously, using the await keyword.
+
+This feature was supported before TypeScript 2.1, but only when targeting ES6/ES2015. TypeScript 2.1 brings the capability to ES3 and ES5 runtimes, meaning you’ll be free to take advantage of it no matter what environment you’re using.
+
+For example, let’s take the following function named delay, which returns a promise and waits for a certain amount of time before resolving:
+
+Let’s try to work on a simple-sounding task. We want to write a program that prints "Hello", three dots, and then "World!".
+
+This turned out to be about as simple as it sounded.
+
+Now let’s say we want to use our delay function to pause before each dot.
+
+Without async/await, we’d have to write something like the following:
+
+This doesn’t look quite as simple any more! What about if we tried using async functions to make this code more readable?
+
+First, we need to make sure our runtime has an ECMAScript-compliant Promise available globally. That might involve grabbing a polyfill for Promise, or relying on one that you might have in the runtime that you’re targeting. We also need to make sure that TypeScript knows Promise exists by setting our lib flag to something like "dom", "es2015" or "dom", "es2015.promise", "es5":
+
+Now we can rewrite our code to use async and await:
+
+Notice how similar this is compared to our synchronous version! Despite its looks, this function is actually asynchronous, and won’t block other code from running in between each pause. In fact, the two versions of dramaticWelcome basically boil down to the same code, but with async & await, TypeScript does the heavy lifting for us.
+
+Next Steps
+TypeScript 2.1 RC has plenty of other features, and we’ll have even more coming for 2.1 proper. You can take a look at our roadmap to see what else is in store. We hope you give it a try and enjoy it!

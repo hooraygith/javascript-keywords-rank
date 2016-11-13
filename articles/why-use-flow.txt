@@ -1,0 +1,175 @@
+Flow is a static type checker for JavaScript open sourced by Facebook. It helps you deal with many of the pain points of JavaScript and write better, easier to reason about code.
+
+According to flow’s homepage:
+
+Flow can catch common bugs in JavaScript programs before they run, including
+
+silent type conversions,
+
+null dereferences,
+
+and the dreaded undefined is not a function.
+
+and
+
+Flow also lets you gradually add type assertions to your code
+
+So flow is a solution to many common JavaScript problems that you can gradually introduce into your codebase. Pretty cool!
+
+Types
+Before we even address flow, however, we must first clarify what types are. I’m going to go ahead and use the definition in Wikipedia’s data types article:
+
+A type is a classification identifying one of various types of data, such as real, integer or boolean, that determines the possible values for that type, the operations that can be done on values of that type, the meaning of the data, and the way values of that type can be stored.
+
+More simply put, in my own words, types are rules about the data in your program, and those rules help the computer determine what you can and can’t do with that data, which can be pretty helpful if you accidentally try to break those rules.
+
+As you write code in different languages though, you’ll notice that the ways that types manifest themselves can vary quite a bit, from being explicitly required, to optional, to nearly non-existent. Generally the type systems of programming languages fall into two categories: Strong vs. Weak and Static vs Dynamic.
+
+Strong typing vs. Weak typing
+
+Wikipedia has a great article on this. The general consensus being that strong vs. weak is a bit ambiguous because there is no agreed upon definition. I’m going to go with the definition on the wikipedia page titled
+
+Implicit type conversions and “type punning”
+
+In a strongly typed language such as python, a variable cannot change its type after it has first been declared unless you explicitly cast it to another type temporarily, or it is redeclared later.
+
+throws the following error
+
+but this is fine
+
+and so is this
+
+In a weakly typed language such as JavaScript, anything goes because variables are all implicitly casted when they’re used. You can add strings to Objects, Arrays to Objects, numbers to null, and more; even worse, none of it throws an error if it’s an accident.
+
+I think you can imagine all the possible problems that arise from all this happening without throwing any errors whatsoever.
+
+Static typing vs. Dynamic typing
+
+Static vs Dynamic typing is a bit more controversial than Weak vs. Strong. I’m not going to be saying one is better than another or giving a comprehensive breakdown of the benefits of each; instead, I’ll just be giving a brief introduction of both. If you want to see a bit more debate which is better, the following are great discussions
+
+Is type safety worth the trade-offs?
+
+What is the supposed productivity gain of dynamic typing?
+
+Now given that disclaimer:
+
+In a statically typed language, you explicitly write out the types of your variables. Most people have seen Java, a strongly, statically typed language, where you write the types of your variables out such as int or String, and the return type and parameter types of your functions like int add(int a, int b):
+
+This code will throw an error at line 8 when you compile your code because you cannot add a String type to an int type.
+
+Note that:
+
+The error is caught at compile-time instead of at run-time, which means you can’t even run the code until you fix the errors.
+
+If you’re using an IDE, you’d get a message saying that add(x, s) isn’t possible. Because you specified your types in advance, your code can be analyzed at a higher level without compiling to find mistakes.
+
+If the function was instead called sfjkasjf instead of add, you’d still know that it takes in two integers and returns an integer, which is useful information.
+
+In a dynamically typed language, you don’t have to write out your types at all. The main benefit being that your code looks less cluttered, and you don’t have to think about types before starting to program, which is a productivity boost. In python, a strongly, dynamically typed language, the equivalent code would look like:
+
+This code will throw an error at line 7 when you run your code because you cannot add a string type to an int type.
+
+Note that
+
+The code is more concise
+
+You can’t really tell what the type of a and b are. int, string, float, etc. are all possibilities.
+
+It still throws an error when you run it, albeit at run-time rather than compile-time, which is a big distinction. This means testing is more crucial for dynamically typed languages because they will run just fine even if the code contains type errors.
+
+Type Inference in Statically Typed Languages
+
+What I said earlier about statically typed languages needing types to be explicitly written out is not 100% true. In languages without type inference such as Java this is true, but in languages with type inference, you can leave it to the computer to figure out what types you’re using. For example, the following example contains the same code above written in Haskell, a language known for its really powerful type system, but where I write let x = 1 as well as where I write let add' = (+) Haskell infers the types, and doesn’t require explicit guidance.
+
+Haskell
+
+Type inference exists in many other type systems including flow’s type system. The general idea though is that while type inference makes your life a bit easier since you don’t have to write as much, you can’t and shouldn’t rely on type inference for everything.
+
+Bringing it back to JavaScript and Flow
+Now that we know more about types, we can get back to the matter at hand, which is making it harder to make mistakes in your JavaScript code.
+
+JavaScript is both weakly and dynamically typed, which is a flexible but extremely error prone combination. As we read above, we know that due to implicit casting all operations between values of different types happen without error regardless of whether or not those operations are valid (weak typing), and that you never write out your types yourself (dynamic typing).
+
+This mishmash of weak and dynamic is pretty unfortunate as you can see in following example and countless others that criticize these qualities of the language.
+
+wat
+The solution to most of these problems is flow, which through static typing and type inference, addresses a lot of the pain points of the language like the one above.
+
+This isn’t a tutorial, so if you want to follow along you can check out the getting started guide for flow.
+
+Lets go ahead and return to our very first JS example in the weak typing section, but this time with flow checking our code.
+
+We add // @flow to the first line of the program to opt into typing, and then run the command line tool flow to check our code (IDE integration is also possible):
+
+Immediately every single line becomes a type error similar to the one below.
+
+Without doing any extra work to add type annotations, flow already indicates that there’s something incorrect going on. The wat video doesn’t really apply anymore.
+
+Benefits of annotating your code
+
+While flow will help catch errors like the one above, to truly start benefiting from it, you’ll have to write your own type annotations, meaning you use either flow’s built in types such as number, string, null, boolean, etc. to specify the types of your values or you create some type aliases of your own such as
+
+Now you can transform a function such as
+
+into
+
+In this specific case we know that xyz is supposed to take in 3 numbers and return a number. Now if you tried to do xyz({}, '2', []), which is 100% valid JavaScript (lol), flow would throw an error! As you begin to do this more and more, flow learns more about your code base and gets better at telling you what mistakes you’ve made.
+
+A Few Examples
+Catches Incorrect Number of Parameters Passed to Function
+
+Code:
+
+Error:
+
+Catches Incorrect Parameter Types
+
+Code:
+
+Error:
+
+Makes Sure You Don’t Forget to Check for NULL
+
+Code:
+
+Error:
+
+Makes Sure You Return The Right Types
+
+Code:
+
+Error:
+
+Make Sure Your Objects Contain All the Properties They’re Supposed to Contain
+
+Code:
+
+Error:
+
+Make Sure You Don’t Access Nonexistent Object Properties
+
+Code:
+
+Error:
+
+Going Deeper
+There’s a few more common benefits that I’m probably forgetting, but the above examples cover most of them. If you’re thinking, “that’s it?”, the rabbit hole goes much much deeper.
+
+Giulio Canti has written quite a few articles on the more advanced things that you can do with flow that allow you to do be certain of much more than just variable types, parameter types, and return types.
+
+You can use types to check if user input has been validated in Phantom Types with Flow
+
+You can create types with built in constraints in Refinement Types with Flow
+
+You can create higher kinded types in Higher Kinded Types with Flow
+
+You can express the side effects of your code as types in The Eff Monad Implemented in Flow
+
+He also has authored flow-static-land, which is pretty mind blowing.
+
+Conclusion
+TL;DR:
+
+JavaScript is weakly and dynamically typed, which is error prone and a big reason for the bad rep of the language.
+
+With little upfront cost and with the ability to opt-in slowly, Flow fixes both of these things by adding a type system to JavaScript.
