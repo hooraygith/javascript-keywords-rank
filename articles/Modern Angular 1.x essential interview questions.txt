@@ -1,0 +1,140 @@
+Angular 1.x has changed a lot with 1.5 introducing .component(), and with this it brings a whole new light to interviewing. At many previous jobs I’ve interviewed many developers on Angular, JavaScript in general and combining the two. This is my list of what I’d consider “modern Angular 1.x” interview questions, with a focus on component architecture and modern “best practices”. Some are easy, some are hard - take your pick!
+
+Some questions are geared towards letting the interviewee decide approaches and answer based on their experience/opinions. For instance, “when would you use X over Y” is a better question than “why is X a better approach than Y?”. This allows you to dig deeper and also have better conversations during the interview - as well as quickly gauge whether the developer is right for you.
+
+Answers are not included, and won’t be. Some are very subjective, some I’d encourage you to learn yourself. If you do not know the answers, then you can research the ones you do not know and learn. Reciting will not get you through a job interview :)
+Components
+
+What is a “component”?
+When would you use a component over a directive?
+What is component architecture?
+What is the difference between a stateful and stateless component?
+What are lifecycle hooks and why are they important?
+When would you consider one-way dataflow over two-way?
+Why is isolate scope an important concept?
+How would you describe “MVC/MVVM”?
+What is the difference between MVC/MVVM and component architecture?
+What types of bindings can a component receive?
+Can you describe immutable datastructures?
+Give an example of an immutable operation in JavaScript
+State management and dataflow
+
+How do you get data into a component?
+How do you get data out of a component?
+What benefits does unidirectional dataflow bring?
+What are common problems with multidirectional dataflow?
+Have you ever used $ngRedux or a similar implementation?
+What benefits does a Redux approach with Angular 1.x bring?
+Performance and debugging
+
+What are key areas you can address for faster $digest cycles?
+What are the benefits to using one-time binding expressions?
+What can lead to memory leaks in Angular 1.x?
+How would you speed up an ng-repeat?
+How does track by work?
+What are $evalAsync and $applyAsync?
+What are the differences between $watch and $watchCollection?
+Explain how you would attempt to debug an Angular 1.x performance issue
+What debugging tools are you familiar with?
+What is strict-di mode and how does it affect runtime performance?
+What tools have you used to make Angular faster?
+What is the $templateCache?
+Modules and internals
+
+What are the key building blocks of an Angular application?
+How would you describe a module?
+What use case do sub-modules have?
+What have you learned from studying the Angular source code?
+How do you bootstrap Angular asynchronously?
+How can you bootstrap multiple applications at once?
+What is dependency injection (DI)?
+Why is dependency injection useful in Angular?
+How does the $digest cycle work?
+What is $rootScope and how does it differ to $scope?
+When have you used $scope.$apply, and why?
+Directives
+
+What is a directive?
+What directive(s) implement true two-way databinding?
+Why use ng-click over addEventListener?
+When would you use addEventListener?
+What is the link function and when should you use it?
+How do you use the link function to communicate back to the controller?
+What logic should live inside link, and what logic should live in the controller?
+What is the compile function and what can it return?
+What are the pre and post link lifecycle methods?
+Why can the compile function be more effective than link?
+When would you use a directive over a component?
+What are event directives, and what are structural directives?
+What problems have you faced when using directives?
+What practices should you avoid when using directives?
+What types of bindings can a directive receive?
+When would you use require, and what effect does it have on link?
+What is transclusion?
+What directive properties would you recommend avoiding?
+What directives do you tend to avoid and why?
+What different types of scope are there?
+What is JQLite and does it have any limitations?
+Forms
+
+How would you implement form validation using the form’s controller?
+What do dirty, pristine, touched and untouched mean?
+What limitations do Angular 1.x forms have?
+What are some of the built-in validators?
+_What are $parsers and $formatters, and when should you use them?
+_What is the $validators pipeline, and when should you use it?
+What is ngModelOptions and is it a good directive to implement?
+Routing (ui-router 1.0.0)
+
+What is routing?
+What is component routing?
+When would you use a template route, if ever?
+What is a dynamic route and how do you implement it?
+What is “HTML5 mode”?
+How would you render a view only when the data has become available?
+What are transition hooks and what role do they play in routing?
+How do you create sibling views?
+Controllers
+
+What is the role of a controller?
+How would you get data into a controller?
+When would you use $scope.$watch? Should you? How do you unwatch?
+Explain when you would use controllerAs and the effect it has
+When should you use $scope inside a controller?
+When would you consider using a nested controller? Is it good practice?
+Filters
+
+What is a filter?
+How does a filter actually work?
+What is the most performant approach to filtering data and why?
+How do you use multiple filters at once in templates?
+How do you use multiple filters at once inside a controller?
+How do you pass arguments to a custom filter?
+Services and HTTP
+
+What is a service?
+What is a factory?
+What is a provider?
+What design patterns do services and factories promote?
+What is a service’s role in an Angular application?
+What’s the difference between $http and $resource?
+When could it make sense to use $resource over $http?
+What is a Promise? Name some places Angular uses them.
+What is $q and when would you use it?
+What is an http interceptor and what are good use cases for it?
+What different types of authentication have you implemented?
+Events
+
+When should you use events in Angular 1.x?
+What’s the difference between $emit and $broadcast?
+What’s the difference between $scope.$emit and $rootScope.$emit?
+How does event unbinding differ in $scope and $rootScope?
+Testing and tooling
+
+What is the difference between a unit and end-to-end (e2e) test?
+What tools have you used for unit testing?
+What tools have you used for end-to-end (e2e) testing?
+What tooling are you familiar with?
+Describe how lazy-loading works
+What build step processes are effective for faster Angular applications?
+Are you using ES6 transpilers or TypeScript?

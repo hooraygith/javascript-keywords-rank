@@ -1,0 +1,11 @@
+Angular 3 is hot on the heels of Angular 2
+
+Fresh from the long-awaited release of its Angular 2 JavaScript framework in mid-September, Google will release Angular 3 in a few short months.
+
+Expected in March, Angular 3 will focus on improved tooling and a reduction in generated code, said Rob Wormald, of the Angular core team and a developer advocate at Google. It will feature a template compiler that provides feedback in an IDE on errors in a template, and it will generate 25 percent less code, thanks to improved compilation and changes in the framework's underlying mechanics.
+
+While more than two years passed between the April 2012 introduction of the 1.0 line and the Sept. 15 debut of the rewritten Angular 2 framework, Angular 3 gets a much-accelerated release schedule. Wormald promised a new major version twice a year from now on. "This is just semantic versioning in action for us and it means that we will every six months have a predictable release schedule," he stated.
+
+Wormald said he was not aware of any features that would be deprecated in Angular 3, but when features are to be deprecated, the Angular team will let developers know ahead of time and keep supporting that feature for two major release cycles.
+
+Unlike Angular 2, Angular 3 is not a rewrite. "There's nobody on the team who ever wants to rewrite a framework again," said Wormald. Using TypeScript, Microsoft's typed superset of JavaScript, Angular 2 was rewritten to allow decoupling of the framework from the DOM to enable use of multiple renderers.

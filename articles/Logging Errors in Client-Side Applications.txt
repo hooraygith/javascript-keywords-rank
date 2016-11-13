@@ -1,0 +1,166 @@
+Logging is an important part of any software application, both during active development and when it’s running in production mode.
+
+When you’re working on the server, there are hundreds of libraries available to you regardless of your server-side language of choice, a wide range of storage mechanisms, and all sorts of tools you can use to work with the resulting logs.
+
+However, when it comes to client-side applications, logging is something that often gets overlooked, and the options open to you are rather more limited.
+
+In this article I’ll look at some of the ways in which you can implement logging in a client-side application; particularly in a JavaScript-heavy, single-page application (SPA).
+
+The Console
+Perhaps the most common and obvious way to log errors and messages is the console. While it might appear a primitive solution, there’s absolutely no doubt that it’s an invaluable tool for debugging during development, so it’s probably a good place to start.
+
+The implementation of console isn’t always consistent — particularly in IE, perhaps unsurprisingly — but in general there are four key methods available to you:
+
+The output from each of these four methods is subtly different, and most web console implementations (i.e., Dev Tools) allow you to filter messages based on the method used; that is, the logging level.
+
+In order to mitigate the differences between browsers, you can use a wrapper function — such as this one from Paul Irish. The WHATWG is attempting to standardize the console API, but the spec is still at an early stage and unlikely to be implemented for some time.
+
+Tip: If you find that your code is littered with console.log() statements, you might find tools such as grunt-remove-logging or grunt-strip for Grunt, or gulp-strip-debug for Gulp useful for when you move an application into production.
+Enhancing the console
+There are a couple of libraries you can use to “super-charge” the console.
+
+Logdown
+Logdown is a tiny library which provides a few enhancements to the console. You’ll find a demo here.
+
+Logdown allows you to specify prefixes upon instantiation; one possible use for this is to separate out your log messages by module, for example:
+
+You can then enable or disable the loggers by their prefix, for example:
+
+Disabling a logger effectively silences it.
+
+Once you’ve instatatied one or more loggers, you can log messages using the log(), warn(), info() and error() methods:
+
+Logdown also provides Markdown support:
+
+console.message
+console.message is another library for beautifying the console’s output.
+
+Here’s a quick animation from the documentation, that shows off some of its features:
+
+Essentially the library provides a chainable interface with methods which allow you to format text, group messages together and make them collapsible, send interactive DOM elements or objects to the log — and even include images.
+
+Limitations of the console
+The console is great while you’re building an application and you can have it open in front of you, but unless you happen to be looking over a user’s shoulders, and they happen to have the web console open in their browser, you won’t get to see the result.
+
+What we can do instead is send any errors — or even debug messages during development — to a server somewhere, so that we can access them remotely.
+
+Other Things to Consider
+Now that we’ve looked at some of the solutions available to you, let’s look at a few additional considerations.
+
+Capturing global errors
+At the very least, it’s worth capturing and logging any unhandled exceptions. You can do this using window.onerror. Here’s a really simple example:
+
+Stack traces
+Stack traces provide an additional level of detail when an error occurs, which you may wish to make use of in development. There are a couple of libraries that help to build them.
+
+TraceKit
+TraceKit allows you to inject stack traces into exceptions, and do something with them (e.g. send them to your server-side logging component) by subscribing to them.
+
+Here’s what the code might look like:
+
+Then, in your application:
+
+stacktrace.js
+stacktrace.js is, to quote the documentation , “[a] framework-agnostic, micro-library for getting stack traces in all web browsers”.
+
+It provides a method named printStackTrace() which you can use in an error handler to add a stack trace to your logging function. For example, we could enhance our server-side logger as follows:
+
+Logging Client-Side Errors to the Server
+Sending log entries to the server has a number of advantages:
+
+You can capture log entries from your application without being physically at the computer (perfect in production)
+You can manage your server-side and client-side logs in the same place, potentially using the same tools
+You can set up alerts (e.g. a Slack notification or SMS if a critical error occurs)
+Where the console isn’t available or is difficult to view (e.g. when using a mobile’s web view) it’s easier to see what’s going on
+Let’s look at a few approaches to this.
+
+Rolling your own server-side logger
+In some cases, the simplest solution might be to roll your own server-side logging mechanism.
+
+Here’s an extremely minimal example of the client part using jQuery:
+
+Some usage examples:
+
+With that in mind, here’s a very basic server-side component to accompany this example, built using Node.js with Express, along with the excellent Winston logging library:
+
+In practice, there are some fundamental limitations to this over-simplified logger:
+
+Most logging mechanisms allow you to configure a minimum logging level so that you can filter out certain entries
+It will send log entries immediately, which could lead to your server-side component becoming overloaded
+A better way to deal with the second issue is to buffer log entries and send them in batches. A common approach is to use localStorage to store log entries, then send them at particular intervals — be that time-based, when a certain threshold in the number of pending entries is reached, or when the user closes the window or navigates away from your application by utilizing the window.onbeforeunload event.
+
+To get around these issues, let’s look at a ready-made solution for logging from JS apps.
+
+log4javascript
+log4javascript is based on the ubiquitous log4j, a Java logging framework which has also been ported to PHP, so if you’re coming from a server-side background you may already have some familiarity with it.
+
+log4javascript uses the concept of appenders, which determine what happens when you call one of its logging methods. The default, PopUpAppender, is arguably rather redundant when you have the dev tools provided by most modern browsers.
+
+What’s probably more useful is the AjaxAppender, which you can use to send log entries back to the server. You can configure the AjaxAppender to send entries in batches at timed intervals using setTimed(), of a certain number using setBatchSize() or when the window is unloaded using setSendAllOnUnload().
+
+log4javascript is available to download from Sourceforge, or the similar Log4js is available on Github. You can refer to the Quickstart to get up-and-running fast.
+
+Here’s an example:
+
+Alternatively, to send messages at a specific interval:
+
+Other libraries
+If your project uses jQuery, you might want to look into jquery logger which allows you to log via Ajax; however, it doesn’t support batches. It does integrate nicely with Airbrake as a back-end, though.
+
+loglevel is a lightweight and extensible JS-based logging framework, which supports Ajax via the separate serverSend plugin.
+
+Roll Your Own Batch-Compatible Logger
+Here’s a simple proof-of-concept of a logger which sends messages in batches. It’s written using vanilla JavaScript with ES6 features.
+
+Usage is simple:
+
+Self-Hosted Server-Based Options
+Errbit
+Errbit is an open-source, self-hosted solution for capturing errors. It’s implemented in Ruby and uses MongoDB for storage.
+
+If you want to give Errbit a quick spin, there’s a Chef cookbook or a Dockerfile you can use. There’s also an online demo you can try out.
+
+To sign in to the online demo, use the e-mail demo@errbit-demo.herokuapp.com and the password password.
+SaaS Server-Based Options
+There are a number of SaaS solutions for logging. These include Loggly, track.js, ErrorCeption, Airbrake and New Relic.
+
+Let’s take a brief look at a few such solutions.
+
+Loggly
+Loggly is one of a number of these SaaS solutions. I’m going to use it as an example because it’s easy and free to get started. With the free plan you can log up to 200MB per day, and the data is stored for 7 days.
+
+To use Loggly from a client-side application, you’ll need to include the following snippet:
+
+Note: You’ll need to replace YOUR-LOGGING-KEY with the value specific to your application, which you’ll get when you’ve signed up and logged in, by going to Source Setup.
+If you examine this code, you’ll see that the _LTracker object is initially instantiated as an array. This is a “shim” technique used in many analytics libraries, which means that you can call push() on it before the library has loaded. Any errors or messages you push onto that array will be queued up for when the library becomes available.
+
+Usage is simple:
+
+You can use it to send a snippet of text:
+
+Or, perhaps more usefully, you can use JSON — for example:
+
+While a fairly basic solution, you could simply use the following code to capture errors:
+
+There are some limitations to this approach. Line numbers are virtually useless if you have subtly different builds, or when you’re minifying your JS code.
+
+You’ll also notice in the Loggly snippet above that sendConsoleErrors is set to TRUE, which will automatically log certain errors for you, without having to send them manually. For example, the following will get sent to Loggly if a RequireJS timeout occurs:
+
+{track.js}
+{track.js} is another SaaS solution for logging.
+
+They offer a free plan; it’s limited to 10 errors per minute, 10,000 hits per month and your data is only stored for 24 hours. The most basic paid plan is $29.99 per month — you’ll find more details on their pricing page.
+
+Note: a “hit” is recorded whenever the library is initialized.
+Getting it set up is straightforward:
+
+One you’ve pulled in the appropriate file and initialized the library, you can use methods such as track():
+
+Or use the console, which will send the messages to the web service:
+
+There’s a lot more you can do with {track.js} — check out the documentation for more information.
+
+In Summary
+Client-side logging is often overlooked, but it’s arguably just as important as logging server-side errors. However, there’s no doubt it’s more difficult to setup. There are plenty of options, however, a number of which we’ve looked at during the course of this article.
+
+How do you handle logging in your client-side applications? Have you developed your own approach? Do you use something not covered here? Let me know in the comments.
